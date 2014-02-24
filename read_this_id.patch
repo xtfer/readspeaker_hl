@@ -1,0 +1,82 @@
+diff --git a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install
+index 8f0af66..440b615 100644
+--- a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install
++++ b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install
+@@ -21,6 +21,7 @@ function readspeaker_hl_install() {
+   variable_set('readspeaker_buttonstyle', FALSE);
+   variable_set('readspeaker_playerstyle', FALSE);
+   variable_set('readspeaker_nodes', array());
++  variable_set('readspeaker_readthisid', array());
+ }
+
+ /**
+@@ -36,4 +37,5 @@ function readspeaker_hl_uninstall() {
+   variable_del('readspeaker_buttonstyle');
+   variable_del('readspeaker_playerstyle');
+   variable_del('readspeaker_nodes');
++  variable_del('readspeaker_readthisid');
+ }
+diff --git a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module
+index 33ebac4..559f1ec 100644
+--- a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module
++++ b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module
+@@ -227,6 +227,13 @@ function readspeaker_hl_form($form, &$form_state) {
+     '#description' => t('Set a style attribute for the ReadSpeaker Player area.'),
+     '#required' => FALSE,
+   );
++  $form['layout_settings']['readspeaker_readthisid'] = array(
++    '#type' => 'textfield',
++    '#title' => t('Element ID to be read.'),
++    '#default_value' => variable_get('readspeaker_readthisid', ''),
++    '#description' => t('Set an id to target the read at.'),
++    '#required' => FALSE,
++  );
+   // What kinds of nodes do we want to read by ReadSpeaker
+   $form['content_types'] = array(
+     '#type' => 'fieldset',
+@@ -299,6 +306,7 @@ function theme_readspeaker_hl_button() {
+    // Do nothing, if nodetype isn't selected or ReadSpeaker ID isn't set
+    $node_types = variable_get('readspeaker_nodes', array());
+    $accountid = variable_get('readspeaker_accountid', '');
++   $read_id = variable_get('readspeaker_readthisid', '');
+    $node = menu_get_object();
+
+    if (isset($_SERVER["HTTPS"])) {
+@@ -329,22 +337,31 @@ function theme_readspeaker_hl_button() {
+    drupal_add_js($protocol."://f1.eu.readspeaker.com/script/$accountid/rs_embhl_v2_". $readspeaker_languages[$langid]['langid'] .".js", 'external');
+
+    $nodeurl = $protocol . '://' . $_SERVER['SERVER_NAME'] . url('node/' . $node->nid);
+-
++
++    $read_this_id = empty($read_id) ? 'rs_read_this' : $read_id;
++
+    // Create output
+    $output = '<!-- RS_MODULE_CODE -->';
+    $output .= '<div id="readspeaker_button1" class="rs_skip"'.$button_style.'>';
+-   $output .= '<a accesskey="L" href="' . $protocol . '://app.eu.readspeaker.com/cgi-bin/rsent?customerid=' . $accountid . '&amp;lang=' . $readspeaker_languages[$langid]['langid'] . '&amp;readid=rs_read_this&amp;url=' . urlencode($nodeurl) . '" onclick="readpage(this.href, \'rs_1\'); return false;">';
++   $output .= '<a accesskey="L" href="' . $protocol . '://app.eu.readspeaker.com/cgi-bin/rsent?customerid=' . $accountid . '&amp;lang=' . $readspeaker_languages[$langid]['langid'] . '&amp;readid=' . $read_this_id . '&amp;url=' . urlencode($nodeurl) . '" onclick="readpage(this.href, \'rs_1\'); return false;">';
+    $output .= '<img src="' . $protocol . '://media.readspeaker.com/images/buttons/listen_' . $readspeaker_languages[$langid]['langid'] . '/listen_' . $readspeaker_languages[$langid]['langid'] . '.gif" border="0" title="' . $readspeaker_languages[$langid]['alttext'] . '" alt="' . $readspeaker_languages[$langid]['alttext'] . '" /></a></div>';
+    $output .= '<div id="rs_1"' . $player_style . '></div>';
+-   $output .= '<div id="rs_read_this">';
+-
++
++    if (empty($read_id)) {
++      $output .= '<div id="rs_read_this">';
++    }
++
+    return $output;
+-
+  }
+ }
+
+ function theme_readspeaker_hl_end() {
+- $output = '</div>';
++  $read_id = variable_get('readspeaker_readthisid', '');
++  $output = '';
++
++  if (empty($read_id)) {
++    $output .= '</div>';
++  }
+  return $output;
+ }
+

@@ -1,0 +1,64 @@
+diff --git a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install
+index d2e5e16..8f0af66 100644
+--- a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install
++++ b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.install
+@@ -17,6 +17,7 @@ function readspeaker_hl_install() {
+   variable_set('readspeaker_accountid', '');
+   variable_set('readspeaker_langid', '');
+   variable_set('readspeaker_prefer_uk', FALSE);
++  variable_set('readspeaker_prefer_english', 'en_us');
+   variable_set('readspeaker_buttonstyle', FALSE);
+   variable_set('readspeaker_playerstyle', FALSE);
+   variable_set('readspeaker_nodes', array());
+@@ -31,6 +32,7 @@ function readspeaker_hl_uninstall() {
+   variable_del('readspeaker_accountid');
+   variable_del('readspeaker_langid');
+   variable_del('readspeaker_prefer_uk');
++  variable_del('readspeaker_prefer_english');
+   variable_del('readspeaker_buttonstyle');
+   variable_del('readspeaker_playerstyle');
+   variable_del('readspeaker_nodes');
+diff --git a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module
+index 62fbfe4..33ebac4 100644
+--- a/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module
++++ b/app/sites/all/modules/third_party/readspeaker_hl/readspeaker_hl.module
+@@ -118,10 +118,7 @@ function readspeaker_hl_language_list() {
+  ),
+   );
+
+-  $readspeaker_prefer_uk = variable_get('readspeaker_prefer_uk', FALSE);
+-  if ($readspeaker_prefer_uk) {
+-    $readspeaker_languages['en']['langid'] = 'en_uk';
+-  }
++  $readspeaker_languages['en']['langid'] = variable_get('readspeaker_prefer_english', 'en_us');
+
+   return $readspeaker_languages;
+ }
+@@ -170,7 +167,7 @@ function readspeaker_hl_form($form, &$form_state) {
+     '#title' => t('Language'),
+     '#default_value' => variable_get('readspeaker_langid', ''),
+     '#options' => array(
+-   'en' => t('American English'),
++   'en' => t('English'),
+    'ar' => t('Arabic'),
+    'eu' => t('Basque'),
+    'ca' => t('Catalan'),
+@@ -198,11 +195,13 @@ function readspeaker_hl_form($form, &$form_state) {
+     '#description' => t('Select which language your ReadSpeaker account supports.'),
+     '#required' => TRUE,
+   );
+-  $form['general_settings']['readspeaker_prefer_uk'] = array(
+-    '#type' => 'checkbox',
+-    '#title' => t('Prefer british english'),
+-    '#default_value' => variable_get('readspeaker_prefer_uk', FALSE),
+-    '#description' => t('Check this option, if you prefer british english and it is available on your account.'),
++  $english_options = array('en_us' => t('American'),'en_uk' => t('British'), 'en_au' => t('Australian'),);
++  $form['general_settings']['readspeaker_prefer_english'] = array(
++    '#type' => 'select',
++    '#title' => t('Prefer english'),
++    '#default_value' => variable_get('readspeaker_prefer_english', 'en_us'),
++    '#options' => $english_options,
++    '#description' => t('Your prefer english and it is available on your account.'),
+     '#required' => FALSE,
+   );
+

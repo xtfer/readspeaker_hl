@@ -1,0 +1,3 @@
+The en_au_addition.patch has been made to add Australia English as a language option.
+The read_this_id.patch has been made to allow the read this id to be set.
+The block.patch has added the read button in a block for use on the current page.
